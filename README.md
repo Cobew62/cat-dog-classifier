@@ -270,4 +270,6 @@ cat-dog-classifier/
 
 ## 许可证
 
-MIT License，欢迎自由使用、修改和学习。
+本项目采用 [MIT License](LICENSE)，欢迎自由使用、修改和学习。
+
+Copyright (c) 2026 Cobew62
