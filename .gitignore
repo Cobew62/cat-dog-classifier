@@ -1,0 +1,26 @@
+# 大数据集（超过 GitHub 单文件 100MB 限制，不上传）
+kagglecatsanddogs.zip
+data/
+cats_and_dogs_filtered/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 本地虚拟环境
+venv/
+env/
+.venv/
+
+# 部署时下载的 wheel 临时文件
+wheels/
+
+# 编辑器 / 系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log

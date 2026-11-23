@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猫狗识别器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: #0f1117;
+      color: #e8eaed;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      color: #9aa0a6;
+      font-size: 14px;
+    }
+
+    .card {
+      background: #1c1f28;
+      border: 1px solid #2a2e3a;
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    /* 上传区域 */
+    .upload-zone {
+      border: 2px dashed #3a3f4d;
+      border-radius: 12px;
+      padding: 48px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #161923;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #6c8cff;
+      background: #1a1f30;
+    }
+
+    .upload-icon {
+      font-size: 44px;
+      margin-bottom: 12px;
+    }
+
+    .upload-zone h2 {
+      font-size: 17px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .upload-zone span {
+      color: #80868b;
+      font-size: 13px;
+    }
+
+    #fileInput { display: none; }
+
+    /* 预览区 */
+    .preview-area {
+      display: none;
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .preview-area img {
+      max-width: 100%;
+      max-height: 320px;
+      border-radius: 12px;
+      border: 1px solid #2a2e3a;
+    }
+
+    .btn-row {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #5b7cfa;
+      color: white;
+    }
+
+    .btn-primary:hover { background: #6c8cff; }
+    .btn-primary:disabled { background: #3a3f4d; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #2a2e3a;
+      color: #c8ccd4;
+    }
+
+    .btn-secondary:hover { background: #343949; }
+
+    /* 结果区 */
+    .result {
+      display: none;
+      margin-top: 28px;
+      padding: 24px;
+      background: #161923;
+      border-radius: 12px;
+      border: 1px solid #2a2e3a;
+    }
+
+    .result-title {
+      text-align: center;
+      font-size: 15px;
+      color: #9aa0a6;
+      margin-bottom: 8px;
+    }
+
+    .result-verdict {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .result-conf {
+      text-align: center;
+      font-size: 13px;
+      color: #9aa0a6;
+      margin-bottom: 24px;
+    }
+
+    .bar-row {
+      margin-bottom: 14px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #2a2e3a;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.6s ease;
+    }
+
+    .cat-bar { background: #e8a33d; }
+    .dog-bar { background: #5b7cfa; }
+
+    .error {
+      display: none;
+      margin-top: 20px;
+      padding: 14px;
+      background: #3a1f22;
+      border: 1px solid #6b2b30;
+      border-radius: 8px;
+      color: #ffb4b4;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      color: #5f6368;
+      font-size: 12px;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>猫狗识别器</h1>
+      <p>上传一张猫或狗的图片，AI 会告诉你它是什么</p>
+    </header>
+
+    <div class="card">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📷</div>
+        <h2>点击选择图片，或拖拽到这里</h2>
+        <span>支持 JPG / PNG / WEBP，最大 16MB</span>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+
+      <div class="preview-area" id="previewArea">
+        <img id="previewImg" src="" alt="预览">
+        <div class="btn-row">
+          <button class="btn-primary" id="predictBtn">开始识别</button>
+          <button class="btn-secondary" id="resetBtn">换一张</button>
+        </div>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+
+      <div class="result" id="resultBox">
+        <div class="result-title">识别结果</div>
+        <div class="result-verdict" id="verdict"></div>
+        <div class="result-conf" id="confidence"></div>
+
+        <div class="bar-row">
+          <div class="bar-label"><span>🐱 猫</span><span id="catPct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill cat-bar" id="catBar" style="width:0%"></div></div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label"><span>🐶 狗</span><span id="dogPct">0%</span></div>
+          <div class="bar-track"><div class="bar-fill dog-bar" id="dogBar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <footer>基于 ResNet-18 迁移学习 · 验证准确率 96.38%</footer>
+  </div>
+
+  <script>
+    const uploadZone = document.getElementById("uploadZone");
+    const fileInput = document.getElementById("fileInput");
+    const previewArea = document.getElementById("previewArea");
+    const previewImg = document.getElementById("previewImg");
+    const predictBtn = document.getElementById("predictBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const resultBox = document.getElementById("resultBox");
+    const errorBox = document.getElementById("errorBox");
+
+    let selectedFile = null;
+
+    function selectFile(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        showError("请选择图片文件");
+        return;
+      }
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        previewArea.style.display = "block";
+        resultBox.style.display = "none";
+        errorBox.style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    uploadZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => selectFile(e.target.files[0]));
+
+    uploadZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      uploadZone.classList.add("dragover");
+    });
+    uploadZone.addEventListener("dragleave", () => {
+      uploadZone.classList.remove("dragover");
+    });
+    uploadZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove("dragover");
+      selectFile(e.dataTransfer.files[0]);
+    });
+
+    predictBtn.addEventListener("click", async () => {
+      if (!selectedFile) return;
+      predictBtn.disabled = true;
+      predictBtn.textContent = "识别中...";
+      errorBox.style.display = "none";
+      resultBox.style.display = "none";
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        // 带上当前网址里的分享码（如 ?sharecode=xxx），否则云端会拒绝请求
+        const response = await fetch("/predict" + window.location.search, { method: "POST", body: formData });
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.error || "识别失败");
+          return;
+        }
+
+        document.getElementById("verdict").textContent = data.name_zh + " (" + data.label + ")";
+        document.getElementById("confidence").textContent = "置信度 " + data.confidence + "%";
+        document.getElementById("catPct").textContent = data.cat_prob + "%";
+        document.getElementById("dogPct").textContent = data.dog_prob + "%";
+        resultBox.style.display = "block";
+
+        // 触发动画
+        document.getElementById("catBar").style.width = "0%";
+        document.getElementById("dogBar").style.width = "0%";
+        setTimeout(() => {
+          document.getElementById("catBar").style.width = data.cat_prob + "%";
+          document.getElementById("dogBar").style.width = data.dog_prob + "%";
+        }, 50);
+      } catch (err) {
+        showError("网络错误：" + err.message);
+      } finally {
+        predictBtn.disabled = false;
+        predictBtn.textContent = "开始识别";
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      selectedFile = null;
+      fileInput.value = "";
+      previewArea.style.display = "none";
+      resultBox.style.display = "none";
+      errorBox.style.display = "none";
+    });
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+    }
+  </script>
+</body>
+</html>
